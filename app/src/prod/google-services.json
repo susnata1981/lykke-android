@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "91650177123",
+    "firebase_url": "https://lykke-1e98b.firebaseio.com",
+    "project_id": "lykke-1e98b",
+    "storage_bucket": "lykke-1e98b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:91650177123:android:7d3790e282f75740",
+        "android_client_info": {
+          "package_name": "com.lykke.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "91650177123-8nm5958v8rhi6ojp6vp7q2uu76bke3fi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lykke.mobile",
+            "certificate_hash": "a023ff2044c2a0566746461f666d95af0037b87b"
+          }
+        },
+        {
+          "client_id": "91650177123-t1hha58ma02gtld3gv721am1pjev78dr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA7wo10LWfhrxvEgayxQR9eAgk9XPaHz-I"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "91650177123-t1hha58ma02gtld3gv721am1pjev78dr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

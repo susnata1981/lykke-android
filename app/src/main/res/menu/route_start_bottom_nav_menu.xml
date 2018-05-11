@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_search"
+        android:title="@string/complete_checkins"
+        />
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/in_progress_checkins"
+        />
+    <item
+        android:id="@+id/action_navigation"
+        android:title="@string/not_started_checkins"
+        />
+</menu>

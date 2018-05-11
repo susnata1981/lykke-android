@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView11"
+        style="@style/TextAppearance.AppCompat.Subhead"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Business Name"
+        android:textColor="@color/textDarkSecondary"
+        app:layout_constraintBaseline_toBaselineOf="@+id/enter_payment_business_name"
+        app:layout_constraintEnd_toEndOf="@+id/textView14"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/enter_payment_business_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        tools:text="TextView"
+        android:textColor="@color/textDarkPrimary"
+        style="@style/Headline"
+        app:layout_constraintStart_toEndOf="@+id/textView11"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/textView14"
+        style="@style/TextAppearance.AppCompat.Subhead"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="Outstanding Balance"
+        android:textColor="@color/textDarkSecondary"
+        app:layout_constraintBaseline_toBaselineOf="@+id/enter_payment_outstanding_balance"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <TextView
+        android:id="@+id/enter_payment_outstanding_balance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        tools:text="TextView"
+        android:textColor="@color/textDarkPrimary"
+        style="@style/Headline"
+        app:layout_constraintStart_toStartOf="@+id/enter_payment_business_name"
+        app:layout_constraintTop_toBottomOf="@+id/enter_payment_business_name"/>
+
+    <TextView
+        android:id="@+id/textView16"
+        style="@style/TextAppearance.AppCompat.Subhead"
+        android:layout_width="140dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="Last Payment"
+        android:textColor="@color/textDarkSecondary"
+        app:layout_constraintEnd_toEndOf="@+id/textView14"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView14"/>
+
+    <TextView
+        android:id="@+id/enter_payment_last_order"
+        style="@style/Headline"
+        android:textColor="@color/textDarkPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBaseline_toBaselineOf="@+id/textView16"
+        app:layout_constraintStart_toStartOf="@+id/enter_payment_outstanding_balance"
+        tools:text="TextView"/>
+
+    <EditText
+        android:id="@+id/enter_payment_current_payment"
+        style="@style/Headline"
+        android:textColor="@color/textDarkPrimary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView18"/>
+
+    <TextView
+        android:id="@+id/textView18"
+        style="@style/TextAppearance.AppCompat.Subhead"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:text="Enter Payment Amount"
+        android:textColor="@color/textDarkSecondary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView13"/>
+
+    <Button
+        android:id="@+id/enter_payment_next_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="Next"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/textView13"
+        style="@style/TextAppearance.AppCompat.Subhead"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="Last Payment Date"
+        app:layout_constraintEnd_toEndOf="@+id/textView16"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView16"/>
+
+    <TextView
+        android:id="@+id/enter_payment_last_payment_date"
+        style="@style/Headline"
+        android:textColor="@color/textDarkPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBaseline_toBaselineOf="@+id/textView13"
+        app:layout_constraintStart_toStartOf="@+id/enter_payment_last_order"
+        tools:text="TextView"/>
+
+</android.support.constraint.ConstraintLayout>
