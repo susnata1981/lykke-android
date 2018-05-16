@@ -4,6 +4,7 @@ import com.lykke.mobile.data.Repository
 import com.lykke.mobile.domain.model.Inventory
 import com.lykke.mobile.domain.model.Item
 import io.reactivex.Observable
+import io.reactivex.Single
 
 class InventoryInteractor(val repository: Repository) : Interactor<String?, Observable<Inventory>> {
 
@@ -16,5 +17,13 @@ class InventoryInteractor(val repository: Repository) : Interactor<String?, Obse
       val sortedList = r.sortedBy { it.key }
       Inventory(sortedList)
     }.toObservable()
+  }
+}
+
+class UpdateInventoryQuantityInteractor(val repository: Repository)
+  : Interactor<Map<String, Int>, Single<Boolean>> {
+
+  override fun execute(req: Map<String, Int>): Single<Boolean> {
+    return repository.updateInventory(req)
   }
 }

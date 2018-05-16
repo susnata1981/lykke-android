@@ -87,6 +87,11 @@ class SummaryFragment : Fragment() {
     })
   }
 
+  override fun onStart() {
+    super.onStart()
+    mHost?.setToolbarTitle(resources.getString(R.string.summary_fragment_title))
+  }
+
   private fun showStatus(message: String) {
     val builder: AlertDialog.Builder
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {

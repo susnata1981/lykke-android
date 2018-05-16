@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<transitionSet xmlns:android="http://schemas.android.com/apk/res/android">
+<transitionSet xmlns:android="http://schemas.android.com/apk/res/android"
+               android:transitionOrdering="together">
+
+    <fade
+        android:duration="@integer/transition_duration"/>
 
     <slide
-        android:duration="300"
+        android:duration="@integer/transition_duration"
         android:interpolator="@android:interpolator/fast_out_slow_in"
-        android:slideEdge="right"
-        />
+        android:slideEdge="end"/>
 </transitionSet>

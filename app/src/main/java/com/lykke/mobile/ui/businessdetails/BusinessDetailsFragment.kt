@@ -79,7 +79,7 @@ class BusinessDetailsFragment: Fragment() {
   private fun setTitle() {
     mHost?.let {
       if (mBusiness != null) {
-        it.setToolbarTitle(mBusiness.key)
+        it.setToolbarTitle(resources.getString(R.string.business_details_fragment_title))
       }
     }
   }

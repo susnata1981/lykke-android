@@ -1,14 +1,13 @@
 package com.lykke.mobile.ui.routedetails
 
 import android.arch.lifecycle.LiveData
-import android.os.Parcelable
+import android.arch.lifecycle.MutableLiveData
 import com.lykke.mobile.data.CheckinStatus
 import com.lykke.mobile.domain.model.Business
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.parcel.RawValue
 
-@Parcelize
 class BusinessListViewModel(
     val checkinStatus: CheckinStatus,
-    val businesses: @RawValue LiveData<List<Business>>,
-    val showAddBusinessBtn: Boolean) : Parcelable
+    val businesses: LiveData<List<Business>>,
+    val mPageTitle: MutableLiveData<String>,
+    val showAddBusinessBtn: Boolean) {
+}

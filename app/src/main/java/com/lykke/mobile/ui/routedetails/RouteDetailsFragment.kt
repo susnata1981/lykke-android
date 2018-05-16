@@ -2,7 +2,6 @@ package com.lykke.mobile.ui.routedetails
 
 import android.arch.lifecycle.Observer
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.TabLayout
@@ -11,6 +10,7 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
 import android.support.v4.view.ViewPager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,7 +77,7 @@ class RouteDetailsFragment : android.support.v4.app.Fragment(), OnMapReadyCallba
     Handler().postDelayed({
       mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
           LatLng(KOLKATA_LAT, KOLKATA_LNG), 13.0f))
-    }, 1500)
+    }, 900)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,9 +87,6 @@ class RouteDetailsFragment : android.support.v4.app.Fragment(), OnMapReadyCallba
     mViewModel = ViewModelFactory.getInstance(activity!!.application).create(
         RouteDetailsViewModel::class.java)
     mViewModel.getRouteDetails(mCurrentRoute.key!!)
-    if (mHost != null) {
-      mHost.setToolbarTitle(mCurrentRoute.key!!)
-    }
   }
 
   override fun onCreateView(
@@ -119,16 +116,18 @@ class RouteDetailsFragment : android.support.v4.app.Fragment(), OnMapReadyCallba
     }
   }
 
-  override fun startActivity(intent: Intent?) {
-    super.startActivity(intent)
-  }
-
   override fun onStart() {
     super.onStart()
     if (mViewModel.getUIViewModel().hasStartedCheckin()) {
       val bottomSheet = view!!.findViewById<LinearLayout>(R.id.bottom_sheet)
       ViewPagerBottomSheetBehavior.from(bottomSheet).state = ViewPagerBottomSheetBehavior.STATE_EXPANDED
     }
+
+    if (mHost != null) {
+      mHost.setToolbarTitle(resources.getString(R.string.route_details_title, mCurrentRoute.key!!))
+    }
+
+    mViewModel.getRouteDetails(mCurrentRoute.key!!)
   }
 
   private fun setupBottomSheet(view: View) {
@@ -142,10 +141,9 @@ class RouteDetailsFragment : android.support.v4.app.Fragment(), OnMapReadyCallba
   inner class CheckinsListAdpater(fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
     override fun getItem(position: Int): Fragment {
-      val fragment = BusinessListFragment.newInstance(
-          mViewModel.getUIViewModel().getBusinessListViewModel(mCheckinStatusList[position]))
+      val fragment = BusinessListFragment.newInstance(mCheckinStatusList[position])
           as BusinessListFragment
-      fragment.setViewModel(mViewModel)
+      fragment.setViewModel(mViewModel, mCheckinStatusList[position])
       return fragment
     }
 
@@ -154,18 +152,11 @@ class RouteDetailsFragment : android.support.v4.app.Fragment(), OnMapReadyCallba
     }
 
     override fun getPageTitle(position: Int): CharSequence? {
-      mViewModel.getUIViewModel().getBusinessListViewModel(mCheckinStatusList[position])
-          .businesses.observe(
-          this@RouteDetailsFragment,
-          Observer { businesses ->
-            businesses?.let {
-              mCheckinFilterTabLayout!!.getTabAt(position)!!.text =
-                  resources.getString(R.string.route_details_tab_title,
-                      mCheckinStatusList[position].name,
-                      it.size)
-            }
-          }
-      )
+      val vm = mViewModel.getUIViewModel().getBusinessListViewModel(mCheckinStatusList[position])
+      vm.mPageTitle.observe(activity!!, Observer {
+        mCheckinFilterTabLayout!!.getTabAt(position)?.text = it!!
+      })
+
       return mCheckinStatusList[position].name
     }
   }
@@ -175,3 +166,4 @@ class RouteDetailsFragment : android.support.v4.app.Fragment(), OnMapReadyCallba
     val routeNameTv = view.findViewById<TextView>(R.id.routeNameTextView)
   }
 }
+

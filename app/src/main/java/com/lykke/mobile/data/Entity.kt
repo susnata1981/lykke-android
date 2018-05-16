@@ -2,6 +2,8 @@ package com.lykke.mobile.data
 
 import com.google.firebase.database.DataSnapshot
 
+const val ITEM_QUANTITY = "quantity"
+
 enum class Entity(val tableName: String, mapper: EntityMapper<Any>) {
   BUSINESSES("businesses", BusinessEntityMapper()),
   USER("users", UserEntityMapper()),

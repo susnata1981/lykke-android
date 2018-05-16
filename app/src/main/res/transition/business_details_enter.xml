@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<transitionSet xmlns:android="http://schemas.android.com/apk/res/android"
+    android:transitionOrdering="together">
+
+    <slide
+        android:duration="@integer/transition_duration"
+        android:interpolator="@android:interpolator/fast_out_slow_in"
+        android:slideEdge="start"
+        android:startDelay="@integer/transition_delay">
+
+        <targets>
+            <target android:targetId="@id/business_details_root" />
+            <target android:targetId="@id/toolbar_title" />
+        </targets>
+    </slide>
+
+    <!--<fade>-->
+        <!--<targets>-->
+            <!--<target android:targetId="@id/toolbar_title" />-->
+        <!--</targets>-->
+    <!--</fade>-->
+</transitionSet>

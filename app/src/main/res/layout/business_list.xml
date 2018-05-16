@@ -20,6 +20,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/add_business_to_route"
+        android:backgroundTint="@color/colorPrimary"
         android:layout_margin="8dp"
         android:visibility="gone"
         android:layout_gravity="right|bottom"/>

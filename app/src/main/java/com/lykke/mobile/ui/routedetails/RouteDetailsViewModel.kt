@@ -1,24 +1,23 @@
 package com.lykke.mobile.ui.routedetails
 
-import android.app.AlertDialog
 import android.app.Application
-import android.app.Fragment
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.content.Intent
 import android.util.Log
+import android.view.View
 import com.facebook.login.LoginManager
 import com.google.firebase.auth.FirebaseAuth
 import com.lykke.mobile.Host
 import com.lykke.mobile.LykkeApplication
+import com.lykke.mobile.R
 import com.lykke.mobile.data.CheckinStatus
 import com.lykke.mobile.domain.CreateCheckinInteractor
 import com.lykke.mobile.domain.CreateCheckinRequest
 import com.lykke.mobile.domain.GetCheckinInteractor
 import com.lykke.mobile.domain.GetCheckinRequest
 import com.lykke.mobile.domain.GetLoggedInUserInteractor
-import com.lykke.mobile.domain.GetPresentRouteInteractor
 import com.lykke.mobile.domain.GetRouteInteractor
 import com.lykke.mobile.domain.GetSessionInteractor
 import com.lykke.mobile.domain.model.Business
@@ -26,8 +25,6 @@ import com.lykke.mobile.domain.model.Checkin
 import com.lykke.mobile.domain.model.Route
 import com.lykke.mobile.domain.model.User
 import com.lykke.mobile.ui.login.LoginActivity
-import com.lykke.mobile.util.mapDayToString
-import com.lykke.mobile.util.mapToDayOfWeek
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -36,7 +33,7 @@ import io.reactivex.schedulers.Schedulers
 import java.util.*
 import javax.inject.Inject
 
-class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
+class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context) {
 
   companion object {
     private const val TAG = "RouteDetailsViewModel"
@@ -47,22 +44,20 @@ class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
   @Inject
   lateinit var getRouteInteractor: GetRouteInteractor
   @Inject
-  lateinit var getPresentRouteInteractor: GetPresentRouteInteractor
-  @Inject
   lateinit var getCheckinInteractor: GetCheckinInteractor
   @Inject
   lateinit var createCheckinInteractor: CreateCheckinInteractor
   @Inject
   lateinit var getSessionInteractor: GetSessionInteractor
 
-  //  val mRoutes = MutableLiveData<List<Route>>()
   private val mRoute = MutableLiveData<Route>()
   private val mCheckins = MutableLiveData<List<Checkin>>()
 
   private val mAllBusinessesInRoute = mutableListOf<Business>()
   private val mCompositeDisposable = CompositeDisposable()
   private val mCheckinFilterToBusinessesMap = mutableMapOf<CheckinStatus, MutableLiveData<List<Business>>>()
-  //  val presentDayRoute = MutableLiveData<Route>()
+  private val mPageTitle = mutableMapOf<CheckinStatus, MutableLiveData<String>>()
+
   private var mUser: User? = null
 
   init {
@@ -72,7 +67,11 @@ class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
         .inject(this)
 
     for (status in CheckinStatus.values()) {
-      mCheckinFilterToBusinessesMap[status] = MutableLiveData()
+      val businesses = MutableLiveData<List<Business>>()
+      businesses.value = emptyList()
+      mCheckinFilterToBusinessesMap[status] = businesses
+      mPageTitle[status] = MutableLiveData()
+      mPageTitle[status]!!.value = status.name
     }
   }
 
@@ -98,8 +97,6 @@ class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
                 Pair(checkins, route)
               })
               .subscribe {
-                Log.d(TAG, "checkins -> ${it.first}")
-                Log.d(TAG, "route -> ${it.second}")
                 mCheckins.value = it.first
                 mRoute.value = it.second
                 mAllBusinessesInRoute.addAll(it.second.businesses)
@@ -139,22 +136,11 @@ class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
       return mRoute
     }
 
-//    fun getPresentDayRoute(): LiveData<Route> {
-//      val today = Date()
-//      val cal = Calendar.getInstance()
-//      cal.time = today
-//      val dayOfWeek = mapDayToString(cal.get(Calendar.DAY_OF_WEEK))
-//      presentDayRoute.value = mRoutes.value?.firstOrNull {
-//        it.assignment?.dayOfWeek.equals(dayOfWeek)
-//      }
-//
-//      return presentDayRoute
-//    }
-
     fun getBusinessListViewModel(status: CheckinStatus): BusinessListViewModel {
       return BusinessListViewModel(
           status,
           mCheckinFilterToBusinessesMap[status]!!,
+          mPageTitle[status]!!,
           status == CheckinStatus.INCOMPLETE)
     }
 
@@ -166,15 +152,18 @@ class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
     }
 
     fun isActionEnabled(): Boolean {
-      val dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-      if (mRoute.value!!.assignment.dayOfWeek == null) {
-        return false
-      }
-
-      return mapToDayOfWeek(mRoute.value!!.assignment.dayOfWeek!!) == dayOfWeek
+//      val dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+//      if (mRoute.value!!.assignment.dayOfWeek == null) {
+//        return false
+//      }
+//
+//      return mapToDayOfWeek(mRoute.value!!.assignment.dayOfWeek!!) == dayOfWeek
+      return true
     }
 
-    fun handleStartCheckinClick(fragment: BusinessListFragment, host: Host, business: Business) {
+    fun handleStartCheckinClick(
+        fragment: BusinessListFragment, host: Host, business: Business,
+        view: View?) {
       val checkin = mCheckins.value!!.firstOrNull {
         it.business.key == business.key
       }
@@ -186,13 +175,13 @@ class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
         }
       }
 
-      checkin(business, host)
+      checkin(business, host, view)
     }
 
-    fun checkin(business: Business, host: Host) {
+    fun checkin(business: Business, host: Host, view: View?) {
       host.setCurrentBusiness(business)
       handleNextButtonClick(business)
-      host.next()
+      host.next(view)
     }
   }
 
@@ -200,15 +189,21 @@ class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
     var result = mutableListOf<Business>()
     mAllBusinessesInRoute.forEach {
       if (status == CheckinStatus.INCOMPLETE) {
-        if (!findBusinesses(CheckinStatus.IN_PROGRESS, it) && !findBusinesses(CheckinStatus.COMPLETE, it)) {
-          result.add(it)
+        if (!findBusinesses(CheckinStatus.IN_PROGRESS, it)
+            && !findBusinesses(CheckinStatus.COMPLETE, it)) {
+          if (!result.contains(it)) {
+            result.add(it)
+          }
         }
       } else {
         if (findBusinesses(status, it)) {
-          result.add(it)
+          if (!result.contains(it)) {
+            result.add(it)
+          }
         }
       }
     }
+
     return result
   }
 
@@ -241,7 +236,11 @@ class RouteDetailsViewModel(context: Application) : AndroidViewModel(context) {
 
   private fun refreshBusinessList() {
     for (status in CheckinStatus.values()) {
-      mCheckinFilterToBusinessesMap[status]!!.value = getBusinesses(status)
+      val businesses = getBusinesses(status)
+      mCheckinFilterToBusinessesMap[status]!!.value = businesses
+      mPageTitle[status]!!.value = context.resources.getString(R.string.route_details_tab_title,
+          status.name,
+          businesses.size)
     }
   }
 }

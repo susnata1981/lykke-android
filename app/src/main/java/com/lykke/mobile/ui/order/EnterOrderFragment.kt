@@ -10,10 +10,10 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -55,19 +55,8 @@ class EnterOrderFragment : Fragment() {
     val view = container!!.inflate(R.layout.enter_order_layout)
     mInventoryListRV = view.findViewById(R.id.enter_order_inventory_list)
 
-    mInventoryListRV!!.translationX = activity!!.window.decorView.width.toFloat()
     mInventoryListRV!!.layoutManager = LinearLayoutManager(activity, LinearLayout.VERTICAL, false)
     mInventoryListRV!!.adapter = InventoryListAdapter()
-
-    mInventoryListRV!!.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-      override fun onPreDraw(): Boolean {
-        mInventoryListRV!!.viewTreeObserver.removeOnPreDrawListener(this)
-        mInventoryListRV!!.animate()
-            .translationX(0f)
-            .start()
-        return true
-      }
-    })
 
     mProgressBarContainer = view.findViewById(R.id.enter_order_progress_bar_container)
     return view
@@ -124,6 +113,8 @@ class EnterOrderFragment : Fragment() {
     mViewModel.getUIViewModel().next().observe(this, Observer {
       mHost?.next()
     })
+
+    mHost?.setToolbarTitle(resources.getString(R.string.enter_order_title))
   }
 
   private var mOrderTotalVH: OrderDetailsVH? = null
@@ -173,6 +164,7 @@ class EnterOrderFragment : Fragment() {
       } else if (viewType == ORDER_DETAILS) {
         updateTotal(holder as OrderDetailsVH)
         mOrderTotalVH = holder
+        Log.d("KKK", "EOF::mItemQuantityMap -> $mItemQuantityMap")
         holder.continueBtn!!.setOnClickListener {
           val order = Order(mGross, mTotal, mItemQuantityMap, Date().time)
           mViewModel.getUIViewModel().updateOrder(order)
@@ -202,13 +194,17 @@ class EnterOrderFragment : Fragment() {
   private var mTax: Double = 0.0
   private var mTotal: Double = 0.0
 
-  fun updateTotal(vh: OrderDetailsVH) {
+  fun updateTotal(vh: OrderDetailsVH?) {
+    vh ?: return
+
     mInventory ?: return
 
     mGross = 0.0
     mItemQuantityMap.forEach { key, quantity ->
-      val item = mInventory!!.items.first { it.key == key }
-      mGross += item.price * quantity
+      val item = mInventory!!.items.firstOrNull { it.key == key }
+      if (item != null) {
+        mGross += item.price * quantity
+      }
     }
 
     mTax = SALES_TAX * mGross
@@ -227,7 +223,6 @@ class EnterOrderFragment : Fragment() {
     val orderTaxTV = view.findViewById<TextView>(R.id.order_tax)
     val orderTotalTV = view.findViewById<TextView>(R.id.order_total)
     val continueBtn = view.findViewById<Button>(R.id.order_continue_btn)
-
   }
 
   inner class VH(view: View) : RecyclerView.ViewHolder(view) {
@@ -254,7 +249,7 @@ class EnterOrderFragment : Fragment() {
           }
 
           mItemQuantityMap[mInventory!!.items[adapterPosition - 1].key!!] = quantity
-          updateTotal(mOrderTotalVH!!)
+          updateTotal(mOrderTotalVH)
 
         } catch (e: NumberFormatException) {
           Toast.makeText(activity, "Must provide valid quantity ($input) ${orderQuantity.text}", Toast.LENGTH_LONG)

@@ -13,8 +13,7 @@ import com.lykke.mobile.StartActivity
 import com.lykke.mobile.ViewModelFactory
 import kotlinx.android.synthetic.main.activity_login.loginBtn
 import kotlinx.android.synthetic.main.activity_login.progressBar
-import kotlinx.android.synthetic.main.activity_login.toolbar
-import java.util.Arrays;
+import java.util.*
 
 class LoginActivity : AppCompatActivity(), LoginViewModel.Navigator {
   companion object {
@@ -37,7 +36,7 @@ class LoginActivity : AppCompatActivity(), LoginViewModel.Navigator {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_login)
-    setSupportActionBar(toolbar)
+//    setSupportActionBar(toolbar)
 
     mViewModel = ViewModelFactory.getInstance(application).create(LoginViewModel::class.java)
     mViewModel.setNavigator(this)

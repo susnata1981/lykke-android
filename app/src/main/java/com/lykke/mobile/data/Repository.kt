@@ -19,12 +19,11 @@ interface Repository {
   fun getCheckins(userKey: String, businessKey: String?, timeCreated: Long?)
       :Observable<List<CheckinEntity>>
 
-//  @Deprecated("Use getCheckins instead")
-//  fun getCheckins(userId: String, date: Date?): Observable<List<CheckinEntity>>
-
   fun updateCheckin(checkin: CheckinEntity): Single<Boolean>
 
   fun getInventory(): Single<List<ItemEntity>>
+
+  fun updateInventory(item: Map<String, Int>): Single<Boolean>
 
   fun createSession(userKey: String): Single<SessionEntity>
 

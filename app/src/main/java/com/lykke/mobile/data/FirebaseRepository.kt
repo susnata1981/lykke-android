@@ -3,8 +3,12 @@ package com.lykke.mobile.data
 import android.util.Log
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
 import com.google.firebase.database.ValueEventListener
+import com.lykke.mobile.domain.model.Inventory
 import com.lykke.mobile.util.isSameDay
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -296,6 +300,41 @@ class FirebaseRepository(val database: FirebaseDatabase) : Repository {
 
       e.setDisposable(Disposables.fromAction {
         mDb.getReference("items").removeEventListener(listener)
+      })
+    }
+  }
+
+  override fun updateInventory(input: Map<String, Int>): Single<Boolean> {
+    return Single.create { e ->
+
+      Log.d("KKK", "Updating inventory to $input")
+      val dbRef = mDb.getReference("itemmaster")
+      dbRef.runTransaction(object : Transaction.Handler {
+
+        override fun onComplete(err: DatabaseError?, result: Boolean, p2: DataSnapshot?) {
+          if (err != null) {
+            e.onError(err.toException())
+          }
+          e.onSuccess(result)
+        }
+
+        override fun doTransaction(snapshot: MutableData): Transaction.Result {
+          var updatedItems = mutableMapOf<String, Any>()
+          val items = snapshot.children.map {
+            val item = it.getValue(ItemEntity::class.java)!!
+//            item.name = it.key
+            val filteredItem = input.filter { it.key == item.name }
+            if (!filteredItem.isEmpty()) {
+              val newQuantity = item.quantity - filteredItem.entries.first().value
+              updatedItems[it.key] = ItemEntity(item.name, item.price, newQuantity)
+            } else {
+              updatedItems[it.key] = item
+            }
+          }
+//          Log.d("KKK", "items -> $items")
+          snapshot.value = updatedItems
+          return Transaction.success(snapshot)
+        }
       })
     }
   }

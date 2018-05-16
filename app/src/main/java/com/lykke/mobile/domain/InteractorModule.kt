@@ -109,4 +109,10 @@ class InteractorModule {
   fun provideUpdateSeessionInteractor(repository: Repository): UpdateSessionInteractor {
     return UpdateSessionInteractor(repository)
   }
+
+  @UserScope
+  @Provides
+  fun providesUpdateInventoryQuantityInteractor(repository: Repository): UpdateInventoryQuantityInteractor {
+    return UpdateInventoryQuantityInteractor(repository)
+  }
 }

@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
+import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -17,6 +18,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.lykke.mobile.Host
 import com.lykke.mobile.R
+import com.lykke.mobile.data.CheckinStatus
 import com.lykke.mobile.domain.model.Business
 import com.lykke.mobile.util.inflate
 
@@ -27,41 +29,30 @@ class BusinessListFragment : Fragment() {
   companion object {
     private const val PAGE_TITLE = "PAGE_TITLE"
     private const val BUSINESS_LIST = "BUSINESS_LIST"
+    private const val CHECKIN_STATUS = "CHECKIN_STATUS"
 
-    fun newInstance(businessListViewModel: BusinessListViewModel): Fragment {
-      val bundle = Bundle()
-      bundle.putParcelable(BUSINESS_LIST, businessListViewModel)
+    fun newInstance(status: CheckinStatus): Fragment {
+//      val bundle = Bundle()
+//      bundle.putString(CHECKIN_STATUS, status.name)
       val fragment = BusinessListFragment()
-      fragment.arguments = bundle
+//      fragment.arguments = bundle
       return fragment
     }
   }
 
-  private var pageTitle: String = ""
   private lateinit var mBusinessListRV: RecyclerView
   private lateinit var mBusinessListViewModel: BusinessListViewModel
   private lateinit var mBusinessListStatusTV: TextView
   private var mBusinessList = mutableListOf<Business>()
   private var mHost: Host? = null
   private lateinit var mViewModel: RouteDetailsViewModel
-
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    arguments?.let {
-      mBusinessListViewModel = it.getParcelable(BUSINESS_LIST)
-      pageTitle = it.getString(PAGE_TITLE, "")
-    }
-  }
+  private lateinit var mCheckinStatus: CheckinStatus
 
   override fun onAttach(context: Context?) {
     super.onAttach(context)
     if (context is Host) {
       mHost = context
     }
-  }
-
-  fun getHostActivity(): Host? {
-    return mHost
   }
 
   override fun onCreateView(
@@ -90,21 +81,19 @@ class BusinessListFragment : Fragment() {
 
   override fun onStart() {
     super.onStart()
-    mBusinessListViewModel.businesses.observe(this, Observer { businesses ->
+
+    mBusinessListViewModel.businesses.observe(activity!!, Observer {
       mBusinessList.clear()
-      businesses?.let {
-        if (it.isEmpty()) {
-          showStatus(resources.getString(R.string.route_details_no_businesses))
-        } else {
-          mBusinessList.addAll(it)
-          mBusinessListStatusTV.visibility = View.GONE
-          mBusinessListRV.visibility = View.VISIBLE
-        }
+      if (it!!.isEmpty()) {
+        showStatus(resources.getString(R.string.route_details_no_businesses))
+      } else {
+        mBusinessList.addAll(it!!)
+        mBusinessListStatusTV.visibility = View.GONE
+        mBusinessListRV.visibility = View.VISIBLE
       }
       mBusinessListRV.adapter.notifyDataSetChanged()
+      mBusinessListViewModel.showAddBusinessBtn
     })
-
-    mBusinessListViewModel.showAddBusinessBtn
   }
 
   private fun showStatus(message: String) {
@@ -119,8 +108,11 @@ class BusinessListFragment : Fragment() {
       holder.businessNameTextView.text = mBusinessList[position].key
       holder.startCheckinBtn.isEnabled = mViewModel.getUIViewModel().isActionEnabled()
       holder.startCheckinBtn.setOnClickListener {
+        ViewCompat.setTransitionName(holder.businessNameTextView, resources.getString(R.string.business_name_transition_name))
+
         mViewModel.getUIViewModel().handleStartCheckinClick(
-            this@BusinessListFragment, mHost!!, mBusinessList[position])
+            this@BusinessListFragment, mHost!!, mBusinessList[position],
+            holder.businessNameTextView)
       }
     }
 
@@ -133,8 +125,10 @@ class BusinessListFragment : Fragment() {
     }
   }
 
-  fun setViewModel(vm: RouteDetailsViewModel) {
+  fun setViewModel(vm: RouteDetailsViewModel, status: CheckinStatus) {
+    mCheckinStatus = status
     mViewModel = vm
+    mBusinessListViewModel = mViewModel.getUIViewModel().getBusinessListViewModel(mCheckinStatus)
   }
 
   fun showAlreadyCheckedInAlert(business: Business) {
@@ -147,7 +141,7 @@ class BusinessListFragment : Fragment() {
     builder.setTitle(resources.getString(R.string.already_checked_in, business.key))
         .setMessage(resources.getString(R.string.recheckin_message))
         .setPositiveButton(android.R.string.yes, DialogInterface.OnClickListener { dialog, which ->
-          mViewModel.getUIViewModel().checkin(business, mHost!!)
+          mViewModel.getUIViewModel().checkin(business, mHost!!, null)
         })
         .setNegativeButton(android.R.string.no, DialogInterface.OnClickListener { dialog, which ->
           dialog.dismiss()

@@ -88,6 +88,13 @@ class RouteListFragment : Fragment() {
     }
   }
 
+  override fun onStart() {
+    super.onStart()
+    mHost?.let {
+      it.setToolbarTitle(resources.getString(R.string.route_list_fragment_title))
+    }
+  }
+
   fun next() {
     mHost.let { mHost!!.next() }
   }
@@ -105,8 +112,6 @@ class RouteListFragment : Fragment() {
     override fun getItemCount(): Int = mRoutes.size
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-      val viewType = getItemViewType(position)
-//      if (viewType == ROUTE) {
         val data = mRoutes[position]
         holder.itemView.dayTextView.text = data.dayOfWeek.name
         holder.itemView.routeNameTextView.text = data.key
@@ -125,7 +130,6 @@ class RouteListFragment : Fragment() {
             mViewModel!!.getUIViewModel().handleClick(mHost!!, data)
           }
         }
-//      }
     }
 
     override fun getItemViewType(position: Int): Int {

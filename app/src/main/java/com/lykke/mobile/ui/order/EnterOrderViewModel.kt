@@ -12,6 +12,7 @@ import com.lykke.mobile.domain.GetCheckinRequest
 import com.lykke.mobile.domain.GetLoggedInUserInteractor
 import com.lykke.mobile.domain.InventoryInteractor
 import com.lykke.mobile.domain.UpdateCheckinInteractor
+import com.lykke.mobile.domain.UpdateInventoryQuantityInteractor
 import com.lykke.mobile.domain.model.Business
 import com.lykke.mobile.domain.model.Checkin
 import com.lykke.mobile.domain.model.Inventory
@@ -44,10 +45,13 @@ class EnterOrderViewModel(val context: Application) : ViewModel() {
   lateinit var updateCheckinInteractor: UpdateCheckinInteractor
   @Inject
   lateinit var getLoggedInUserInteractor: GetLoggedInUserInteractor
+  @Inject
+  lateinit var updateInventoryQuantityInteractor: UpdateInventoryQuantityInteractor
 
   private val mInventory = MutableLiveData<Inventory>()
   private val mStatus = MutableLiveData<String>()
   private val mLastOrder = MutableLiveData<Order>()
+  private var mCurrentOrder: Order? = null
 
   private lateinit var mBusiness: Business
   private var mCurrentCheckin: Checkin? = null
@@ -86,6 +90,7 @@ class EnterOrderViewModel(val context: Application) : ViewModel() {
           mCurrentCheckin = it[0]
           if (mCurrentCheckin!!.order != null) {
             mLastOrder.value = mCurrentCheckin!!.order
+            mCurrentOrder = mCurrentCheckin!!.order.copy()
           }
         }
     mCompositeDisposable.add(disposable)
@@ -118,15 +123,38 @@ class EnterOrderViewModel(val context: Application) : ViewModel() {
       }
       mShowProgressBar.value = true
       mCurrentCheckin!!.order = order
-      updateCheckinInteractor.execute(mCurrentCheckin!!)
+
+      val updateInventoryRequest = mutableMapOf<String, Int>()
+
+      Log.d("MMM", "current order -> ${mCurrentOrder!!.items}")
+      order.items.forEach { itemName, quantity ->
+        val entry = mCurrentOrder!!.items.filter { it.key == itemName }
+        if (!entry.isEmpty()) {
+          Log.d("MMM", "$itemName : $quantity::${entry.entries.first().value}")
+          val quantityDelta = quantity - entry.entries.first().value
+          updateInventoryRequest[itemName] = quantityDelta
+        } else {
+          updateInventoryRequest[itemName] = quantity
+        }
+      }
+
+      Log.d("KKK", "EnterOrderViewModel:: update request -> $updateInventoryRequest")
+      updateInventoryQuantityInteractor.execute(updateInventoryRequest)
           .subscribe({
-            mShowProgressBar.value = false
-            mStatus.value = context.resources.getString(R.string.order_update_success)
+            updateCheckinInteractor.execute(mCurrentCheckin!!)
+                .subscribe({
+                  mShowProgressBar.value = false
+                  mStatus.value = context.resources.getString(R.string.order_update_success)
+                }, {
+                  Log.e(TAG, "Failed to update order $it")
+                  mShowProgressBar.value = false
+                  mStatus.value = context.resources.getString(R.string.order_update_failed)
+                })
           }, {
-            Log.e(TAG, "Failed to update order $it")
             mShowProgressBar.value = false
             mStatus.value = context.resources.getString(R.string.order_update_failed)
           })
+
       return true
     }
 

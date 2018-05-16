@@ -55,4 +55,11 @@
     <string name="already_checked_in">You\'ve already checked into %1$s</string>
     <string name="recheckin_message">Are you sure you want to re-checkin?</string>
     <string name="today_route">Today\'s Route</string>
+    <string name="route_list_fragment_title">All Routes</string>
+    <string name="business_name_transition_name">bntn</string>
+    <string name="business_details_fragment_title">Business Details</string>
+    <string name="enter_payment_fragment_title">Enter Payment</string>
+    <string name="summary_fragment_title">Summary</string>
+    <string name="route_details_title">Route - %1$s</string>
+    <string name="welcome_message">Lykke Login</string>
 </resources>

@@ -146,6 +146,8 @@ class EnterPaymentFragment : Fragment() {
     mViewModel!!.getUIViewModel().getCurrentPayment().observe(this, Observer {
       mCurrentPaymentAmount.setText(it)
     })
+
+    mHost?.setToolbarTitle(resources.getString(R.string.enter_payment_fragment_title))
   }
 
   private fun showStatus(message: String) {
