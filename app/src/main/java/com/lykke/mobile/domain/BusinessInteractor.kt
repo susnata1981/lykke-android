@@ -21,4 +21,3 @@ class GetBusinessListInteractor(val repository: Repository) : Interactor<String,
     }
   }
 }
-

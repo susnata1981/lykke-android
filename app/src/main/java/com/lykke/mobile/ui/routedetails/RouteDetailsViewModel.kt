@@ -25,6 +25,7 @@ import com.lykke.mobile.domain.model.Checkin
 import com.lykke.mobile.domain.model.Route
 import com.lykke.mobile.domain.model.User
 import com.lykke.mobile.ui.login.LoginActivity
+import com.lykke.mobile.util.DAY
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -58,6 +59,7 @@ class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context
   private val mCheckinFilterToBusinessesMap = mutableMapOf<CheckinStatus, MutableLiveData<List<Business>>>()
   private val mPageTitle = mutableMapOf<CheckinStatus, MutableLiveData<String>>()
 
+  private val mIsActionEnabled = MutableLiveData<Boolean>()
   private var mUser: User? = null
 
   init {
@@ -86,7 +88,7 @@ class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context
     val disposable = getLoggedInUserInteractor.execute("")
         .subscribeOn(Schedulers.io())
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe { userEntity ->
+        .subscribe({ userEntity ->
           mUser = userEntity
           getSession()
           getCheckin()
@@ -99,20 +101,25 @@ class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context
               .subscribe {
                 mCheckins.value = it.first
                 mRoute.value = it.second
+                mIsActionEnabled.value = isActionEnabled()
                 mAllBusinessesInRoute.addAll(it.second.businesses)
                 refreshBusinessList()
               }
-        }
+        }, {
+          Log.e(TAG, "Error fetching route details information ${it.message} ${it.stackTrace}")
+        })
     mCompositeDisposable.add(disposable)
   }
 
   private fun getCheckin() {
     mCompositeDisposable.add(
         getCheckinInteractor.execute(GetCheckinRequest(mUser!!.key!!, null, Date().time))
-            .subscribe {
+            .subscribe({
               mCheckins.value = it
               refreshBusinessList()
-            })
+            }, {
+              Log.e(TAG, "Error to get checkin information ${it.message} ${it.stackTrace}")
+            }))
   }
 
   private fun getSession() {
@@ -127,21 +134,31 @@ class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context
         })
   }
 
+  private val mUIViewModel = UIViewModel()
+
   fun getUIViewModel(): UIViewModel {
-    return UIViewModel()
+    return mUIViewModel
   }
 
   inner class UIViewModel {
+    val mBusinessListViewModels = mutableMapOf<CheckinStatus, BusinessListViewModel>()
+
     fun getRoute(): LiveData<Route> {
       return mRoute
     }
 
     fun getBusinessListViewModel(status: CheckinStatus): BusinessListViewModel {
-      return BusinessListViewModel(
-          status,
-          mCheckinFilterToBusinessesMap[status]!!,
-          mPageTitle[status]!!,
-          status == CheckinStatus.INCOMPLETE)
+      if (mBusinessListViewModels[status] == null) {
+        mBusinessListViewModels[status] = BusinessListViewModel(
+            status,
+            mCheckinFilterToBusinessesMap[status]!!,
+            mPageTitle[status]!!,
+            status == CheckinStatus.INCOMPLETE,
+            mIsActionEnabled)
+      }
+
+      return mBusinessListViewModels[status]!!
+      //isActionEnabled() && status == CheckinStatus.INCOMPLETE
     }
 
     fun hasStartedCheckin(): Boolean {
@@ -149,16 +166,6 @@ class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context
         return false
       }
       return mCheckins.value!!.isNotEmpty()
-    }
-
-    fun isActionEnabled(): Boolean {
-//      val dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
-//      if (mRoute.value!!.assignment.dayOfWeek == null) {
-//        return false
-//      }
-//
-//      return mapToDayOfWeek(mRoute.value!!.assignment.dayOfWeek!!) == dayOfWeek
-      return true
     }
 
     fun handleStartCheckinClick(
@@ -170,7 +177,7 @@ class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context
 
       if (checkin != null) {
         if (checkin.status == CheckinStatus.COMPLETE) {
-          fragment.showAlreadyCheckedInAlert(business)
+          fragment.showAlreadyCheckedInAlert(business, view)
           return
         }
       }
@@ -182,6 +189,10 @@ class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context
       host.setCurrentBusiness(business)
       handleNextButtonClick(business)
       host.next(view)
+    }
+
+    fun isCheckinEnabled(): MutableLiveData<Boolean> {
+      return mIsActionEnabled
     }
   }
 
@@ -242,5 +253,14 @@ class RouteDetailsViewModel(val context: Application) : AndroidViewModel(context
           status.name,
           businesses.size)
     }
+  }
+
+  private fun isActionEnabled(): Boolean {
+    val dayOfWeek = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+    if (mRoute.value!!.assignment.dayOfWeek == null) {
+      return false
+    }
+
+    return DAY.from(mRoute.value!!.assignment.dayOfWeek!!).dayNumber == dayOfWeek
   }
 }

@@ -141,7 +141,7 @@ class RouteDetailsFragment : android.support.v4.app.Fragment(), OnMapReadyCallba
   inner class CheckinsListAdpater(fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
     override fun getItem(position: Int): Fragment {
-      val fragment = BusinessListFragment.newInstance(mCheckinStatusList[position])
+      val fragment = BusinessListFragment.newInstance()
           as BusinessListFragment
       fragment.setViewModel(mViewModel, mCheckinStatusList[position])
       return fragment

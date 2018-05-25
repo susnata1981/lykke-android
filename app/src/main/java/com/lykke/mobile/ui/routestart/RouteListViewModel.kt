@@ -13,9 +13,9 @@ import com.lykke.mobile.domain.GetAllRoutesInteractor
 import com.lykke.mobile.domain.GetLoggedInUserInteractor
 import com.lykke.mobile.domain.model.Route
 import com.lykke.mobile.ui.login.LoginActivity
+import com.lykke.mobile.util.DAY
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.time.DayOfWeek
 import java.util.*
 import javax.inject.Inject
 
@@ -56,24 +56,24 @@ class RouteListViewModel(val context: Application) : AndroidViewModel(context) {
               .subscribe { routes ->
                 val routeItemList = mutableListOf<RouteItem>()
 
-                val currentDayWeek = DayOfWeek.of(Calendar.getInstance().get(Calendar.DAY_OF_WEEK))
-                DayOfWeek.values().forEach { dayOfWeek ->
-                  val route = routes.firstOrNull { DayOfWeek.valueOf(it.assignment.dayOfWeek!!) == dayOfWeek }
+                val currentDayWeek = DAY.from(Calendar.getInstance().get(Calendar.DAY_OF_WEEK))
+                DAY.values().forEach { day ->
+                  val route = routes.firstOrNull { DAY.from(it.assignment.dayOfWeek!!) == day }
                   val routeName = if (route == null) context.resources.getString(R.string.holiday_message) else route.key
-                  if (currentDayWeek.name == dayOfWeek.name) {
+                  if (currentDayWeek == day) {
                     routeItemList.add(0,
                         RouteItem(
                             routeName!!,
-                            dayOfWeek,
+                            day,
                             route == null,
-                            currentDayWeek.name == dayOfWeek.name))
+                            currentDayWeek == day))
                   } else {
                     routeItemList.add(
                         RouteItem(
                             routeName!!,
-                            dayOfWeek,
+                            day,
                             route == null,
-                            currentDayWeek.name == dayOfWeek.name))
+                            currentDayWeek == day))
                   }
                 }
 
@@ -106,7 +106,7 @@ class RouteListViewModel(val context: Application) : AndroidViewModel(context) {
 
   data class RouteItem(
       val key: String,
-      val dayOfWeek: DayOfWeek,
+      val dayOfWeek: DAY,
       val isHoliday: Boolean,
       val isCurrentRoute: Boolean)
 }

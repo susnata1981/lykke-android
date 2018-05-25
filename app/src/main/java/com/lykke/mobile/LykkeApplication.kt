@@ -12,31 +12,36 @@ class LykkeApplication : Application() {
   lateinit var appComponent: ApplicationComponent
 
   companion object {
-    private const val DEVELOPER_MODE = true
+    private const val DEVELOPER_MODE = false
+    private const val SALES_TAX = .08
   }
 
   var currentRoute: Route? = null
   var currentBusiness: Business? = null
 
   override fun onCreate() {
-    if (DEVELOPER_MODE) {
-      StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder()
-          .detectDiskReads()
-          .detectDiskWrites()
-          .detectNetwork()   // or .detectAll() for all detectable problems
-          .penaltyLog()
-          .build())
-      StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder()
-          .detectLeakedSqlLiteObjects()
-          .detectLeakedClosableObjects()
-          .penaltyLog()
-          .penaltyDeath()
-          .build())
-    }
+//    if (DEVELOPER_MODE) {
+//      StrictMode.setThreadPolicy(StrictMode.ThreadPolicy.Builder()
+//          .detectDiskReads()
+//          .detectDiskWrites()
+//          .detectNetwork()   // or .detectAll() for all detectable problems
+//          .penaltyLog()
+//          .build())
+//      StrictMode.setVmPolicy(StrictMode.VmPolicy.Builder()
+//          .detectLeakedSqlLiteObjects()
+//          .detectLeakedClosableObjects()
+//          .penaltyLog()
+//          .penaltyDeath()
+//          .build())
+//    }
     super.onCreate()
 
     appComponent = DaggerApplicationComponent.builder()
         .applicationModule(ApplicationModule(this))
         .build()
+  }
+
+  fun getSalesTax(): Double {
+    return SALES_TAX
   }
 }

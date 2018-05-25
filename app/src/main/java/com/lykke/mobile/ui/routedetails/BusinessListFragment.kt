@@ -3,7 +3,6 @@ package com.lykke.mobile.ui.routedetails
 import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.DialogInterface
-import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.view.ViewCompat
@@ -31,12 +30,8 @@ class BusinessListFragment : Fragment() {
     private const val BUSINESS_LIST = "BUSINESS_LIST"
     private const val CHECKIN_STATUS = "CHECKIN_STATUS"
 
-    fun newInstance(status: CheckinStatus): Fragment {
-//      val bundle = Bundle()
-//      bundle.putString(CHECKIN_STATUS, status.name)
-      val fragment = BusinessListFragment()
-//      fragment.arguments = bundle
-      return fragment
+    fun newInstance(): Fragment {
+      return BusinessListFragment()
     }
   }
 
@@ -70,6 +65,9 @@ class BusinessListFragment : Fragment() {
     val addBusinessBtn = view.findViewById<Button>(R.id.add_business_to_route)
     if (mBusinessListViewModel.showAddBusinessBtn) {
       addBusinessBtn.visibility = View.VISIBLE
+      mBusinessListViewModel.isActionEnabled.observe(this, Observer { enabled ->
+        addBusinessBtn.isEnabled = enabled!!
+      })
     }
 
     addBusinessBtn.setOnClickListener {
@@ -92,7 +90,6 @@ class BusinessListFragment : Fragment() {
         mBusinessListRV.visibility = View.VISIBLE
       }
       mBusinessListRV.adapter.notifyDataSetChanged()
-      mBusinessListViewModel.showAddBusinessBtn
     })
   }
 
@@ -106,7 +103,9 @@ class BusinessListFragment : Fragment() {
 
     override fun onBindViewHolder(holder: VH, position: Int) {
       holder.businessNameTextView.text = mBusinessList[position].key
-      holder.startCheckinBtn.isEnabled = mViewModel.getUIViewModel().isActionEnabled()
+      mViewModel.getUIViewModel().isCheckinEnabled().observe(this@BusinessListFragment, Observer { enabled ->
+        holder.startCheckinBtn.isEnabled = enabled!!
+      })
       holder.startCheckinBtn.setOnClickListener {
         ViewCompat.setTransitionName(holder.businessNameTextView, resources.getString(R.string.business_name_transition_name))
 
@@ -131,22 +130,17 @@ class BusinessListFragment : Fragment() {
     mBusinessListViewModel = mViewModel.getUIViewModel().getBusinessListViewModel(mCheckinStatus)
   }
 
-  fun showAlreadyCheckedInAlert(business: Business) {
-    val builder: AlertDialog.Builder
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-      builder = AlertDialog.Builder(activity!!)
-    } else {
-      builder = AlertDialog.Builder(activity!!)
-    }
+  fun showAlreadyCheckedInAlert(business: Business, view: View?) {
+    val builder = AlertDialog.Builder(activity!!)
     builder.setTitle(resources.getString(R.string.already_checked_in, business.key))
         .setMessage(resources.getString(R.string.recheckin_message))
-        .setPositiveButton(android.R.string.yes, DialogInterface.OnClickListener { dialog, which ->
-          mViewModel.getUIViewModel().checkin(business, mHost!!, null)
+        .setPositiveButton(android.R.string.yes, { _, _ ->
+          mViewModel.getUIViewModel().checkin(business, mHost!!, view)
         })
         .setNegativeButton(android.R.string.no, DialogInterface.OnClickListener { dialog, which ->
           dialog.dismiss()
         })
-        .setIcon(android.R.drawable.ic_dialog_alert)
+        .setIcon(R.drawable.ic_priority_high_24dp)
         .show()
   }
 

@@ -840,6 +840,7 @@ public class ViewPagerBottomSheetBehavior<V extends View> extends CoordinatorLay
             throw new IllegalArgumentException(
                     "The view is not associated with ViewPagerBottomSheetBehavior");
         }
+        ((ViewPagerBottomSheetBehavior) behavior).setHideable(false);
         return (ViewPagerBottomSheetBehavior<V>) behavior;
     }
 

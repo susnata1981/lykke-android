@@ -61,8 +61,7 @@ class GetCheckinInteractor(
             val checkins = it
             val result = mutableListOf<Checkin>()
             getBusinessListInteractor.execute("")
-                .subscribe { businesses ->
-
+                .subscribe({ businesses ->
                   checkins.forEach { checkin ->
                     val business = businesses.first { it.key == checkin.businessKey }
                     result.add(Checkin(
@@ -76,7 +75,9 @@ class GetCheckinInteractor(
                         checkin.timeCreated))
                   }
                   e.onNext(result)
-                }
+                }, {
+                  e.onError(it)
+                })
           }.subscribe()
     }
   }

@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import com.google.firebase.auth.FirebaseAuth
 import com.lykke.mobile.domain.model.Business
 import com.lykke.mobile.domain.model.Route
 import com.lykke.mobile.ui.State
@@ -84,13 +85,13 @@ class StartActivity : AppCompatActivity(), Host, StateContext {
   private lateinit var mViewModel: StartActivityViewModel
 
   private lateinit var mToolbarTitleView: TextView
+  private lateinit var mDrawerTitle: TextView
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.start_layout)
 
     setSupportActionBar(toolbar)
-//    toolbar.title = ""
     mToolbarTitleView = toolbar.findViewById(R.id.toolbar_title)
     supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_menu_white)
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -110,6 +111,7 @@ class StartActivity : AppCompatActivity(), Host, StateContext {
 
   override fun onBackPressed() {
     if (mCurrentState?.prevState != null) {
+      Log.d("LLL", "Moving back -> $mCurrentState ${mCurrentState!!.prevState}")
       mCurrentState = mCurrentState!!.prevState
       supportFragmentManager.popBackStack()
 
@@ -137,6 +139,10 @@ class StartActivity : AppCompatActivity(), Host, StateContext {
 
   private fun setupDrawerView() {
     drawer_layout.setStatusBarBackground(R.color.colorPrimaryDark)
+
+    mDrawerTitle = nav_view.getHeaderView(0).findViewById(R.id.drawer_title)
+    mDrawerTitle.text = resources.getString(R.string.drawer_welcome_message,
+        FirebaseAuth.getInstance().currentUser!!.displayName)
 
     nav_view.setNavigationItemSelectedListener {
       when (it.itemId) {
@@ -195,7 +201,8 @@ class StartActivity : AppCompatActivity(), Host, StateContext {
           .addToBackStack(null)
 
       if (mPrevState == mDetailsState && mCurrentState == mBusinessDetailsState) {
-        nextFragment.sharedElementEnterTransition = TransitionInflater.from(this).inflateTransition(R.transition.move)
+        nextFragment.sharedElementEnterTransition = TransitionInflater.from(this)
+            .inflateTransition(R.transition.move)
         transaction.addSharedElement(view, resources.getString(R.string.business_name_transition_name))
       }
 

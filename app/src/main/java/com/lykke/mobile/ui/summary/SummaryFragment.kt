@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
+import android.support.annotation.StyleRes
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +19,6 @@ import com.lykke.mobile.Host
 import com.lykke.mobile.R
 import com.lykke.mobile.util.format
 import com.lykke.mobile.util.inflate
-
 
 class SummaryFragment : Fragment() {
 
@@ -101,10 +101,10 @@ class SummaryFragment : Fragment() {
     }
     builder.setTitle("Completed checkin!")
         .setMessage("Great work!")
-        .setPositiveButton(R.string.continue_button_title, DialogInterface.OnClickListener { dialog, which ->
+        .setPositiveButton(R.string.continue_button_title, { _, _ ->
           mHost?.next()
         })
-        .setIcon(android.R.drawable.ic_dialog_info)
+        .setIcon(R.drawable.ic_priority_high_24dp)
         .show()
   }
 
@@ -113,7 +113,7 @@ class SummaryFragment : Fragment() {
       mOrderItemsContainer!!.removeAllViews()
       val tv = TextView(activity)
       tv.text = activity!!.resources.getString(R.string.no_items)
-      tv.setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Medium)
+      setTextAppearance(tv, android.R.style.TextAppearance_DeviceDefault_Medium)
       tv.setTextColor(activity!!.resources.getColor(R.color.textDarkPrimary))
       val lp = LinearLayout.LayoutParams(
           LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
@@ -129,22 +129,28 @@ class SummaryFragment : Fragment() {
       return
     }
 
-    mOrderItemsContainer?.removeAllViews()
+    mOrderItemsContainer.removeAllViews()
     if (items.isEmpty()) {
       val title = TextView(activity)
       title.setText(R.string.no_items)
-      title.setTextAppearance(android.R.style.TextAppearance_Material_Subhead)
+      setTextAppearance(title, android.R.style.TextAppearance_Material_Subhead)
       mOrderItemsContainer.addView(title)
     } else {
-      items.forEach { item, quantity ->
+      for ((item, quantity) in items) {
         val view = LayoutInflater.from(activity).inflate(
             R.layout.summary_order_item, mOrderItemsContainer, false)
         val itemNameTV = view.findViewById<TextView>(R.id.summary_order_item_name)
         val itemQuantityTV = view.findViewById<TextView>(R.id.summary_order_item_quantity)
         itemNameTV.text = item
         itemQuantityTV.text = quantity.toString()
-        mOrderItemsContainer!!.addView(view)
+        mOrderItemsContainer.addView(view)
       }
+    }
+  }
+
+  private fun setTextAppearance(textView: TextView, @StyleRes styleRes: Int) {
+    if (Build.VERSION.SDK_INT >= 23) {
+      textView.setTextAppearance(styleRes)
     }
   }
 }

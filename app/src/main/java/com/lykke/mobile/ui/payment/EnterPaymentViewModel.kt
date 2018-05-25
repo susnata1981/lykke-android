@@ -59,6 +59,9 @@ class EnterPaymentViewModel(val context: Application) : AndroidViewModel(context
   private val mLastPaymentDate = MutableLiveData<String>()
 
   private val mCurrentPayment = MutableLiveData<String>()
+  private val hideKeyboard = MutableLiveData<Boolean>()
+  private val moveNext = MutableLiveData<Boolean>()
+  private var mUIViewModel: UIViewModel? = null
 
   private val mCompositeDisposable = CompositeDisposable()
 
@@ -102,10 +105,20 @@ class EnterPaymentViewModel(val context: Application) : AndroidViewModel(context
   }
 
   fun getUIViewModel(): UIViewModel {
-    return UIViewModel()
+    if (mUIViewModel == null) {
+      mUIViewModel = UIViewModel()
+    }
+
+    return mUIViewModel!!
   }
 
   inner class UIViewModel {
+
+    init {
+      moveNext.value = false
+      hideKeyboard.value = false
+    }
+
     fun getLastPayment(): LiveData<String> {
       return mLastPayment
     }
@@ -127,19 +140,35 @@ class EnterPaymentViewModel(val context: Application) : AndroidViewModel(context
         mStatus.value = context.resources.getString(R.string.invalid_payment)
         return false
       }
+
       mCurrentCheckin.payment = payment
       updateCheckinInteractor.execute(mCurrentCheckin).subscribe({ _ ->
         mStatus.value = context.resources.getString(R.string.payment_update_success)
+        hideKeyboard.value = true
+        moveNext.value = true
+        moveNext.value = false
+        Log.d("LLL", "moving to next screen")
       }, {
         Log.d(TAG, "Failed to update payment ${it.message}")
+        hideKeyboard.value = true
+        moveNext.value = true
+        moveNext.value = false
         mStatus.value = context.resources.getString(R.string.payment_update_failed)
       })
 
       Handler(context.mainLooper).postDelayed({
         mStatus.value = EMPTY_STRING
-      }, 1000)
+      }, context.resources.getInteger(R.integer.notification_duration).toLong())
 
       return true
+    }
+
+    fun hideKeyboard(): LiveData<Boolean> {
+      return hideKeyboard
+    }
+
+    fun moveNext(): LiveData<Boolean> {
+      return moveNext
     }
   }
 

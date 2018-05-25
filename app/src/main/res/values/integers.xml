@@ -2,4 +2,5 @@
 <resources>
     <integer name="transition_duration">300</integer>
     <integer name="transition_delay">400</integer>
+    <integer name="notification_duration">500</integer>
 </resources>

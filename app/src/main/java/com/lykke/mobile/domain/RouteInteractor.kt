@@ -6,7 +6,7 @@ import com.lykke.mobile.data.RouteEntity
 import com.lykke.mobile.domain.model.Assignment
 import com.lykke.mobile.domain.model.Business
 import com.lykke.mobile.domain.model.Route
-import com.lykke.mobile.util.mapToDayOfWeek
+import com.lykke.mobile.util.DAY
 import io.reactivex.Observable
 import io.reactivex.functions.BiFunction
 import java.util.*
@@ -98,7 +98,7 @@ class GetPresentRouteInteractor(
           val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
           input.first {
             if (it.assignment?.dayOfWeek != null) {
-              dayOfWeek == mapToDayOfWeek(it.assignment.dayOfWeek)
+              dayOfWeek == DAY.from(it.assignment.dayOfWeek).dayNumber
             } else {
               false
             }

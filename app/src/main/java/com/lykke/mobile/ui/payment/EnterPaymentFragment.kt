@@ -42,6 +42,13 @@ class EnterPaymentFragment : Fragment() {
   private var mHost: Host? = null
   private var mViewModel: EnterPaymentViewModel? = null
 
+  private val moveNextObserver = Observer<Boolean> { shouldMove ->
+    if (shouldMove!!) {
+      mHost!!.next()
+      mViewModel!!.getUIViewModel().moveNext().removeObservers(this)
+    }
+  }
+
   private lateinit var mCurrentPaymentAmount: EditText
 
   override fun onCreateView(
@@ -56,6 +63,10 @@ class EnterPaymentFragment : Fragment() {
     mCurrentPayment!!.addTextChangedListener(object : TextWatcher {
       override fun afterTextChanged(s: Editable?) {
         try {
+          if (s.toString().isNullOrEmpty()) {
+            return
+          }
+
           val amount = s.toString().toDouble()
           if (amount < 0) {
             Snackbar.make(
@@ -64,7 +75,7 @@ class EnterPaymentFragment : Fragment() {
                 Snackbar.LENGTH_LONG).show()
             mCurrentPayment!!.text = "0"
           }
-        } catch(ex: NumberFormatException) {
+        } catch (ex: NumberFormatException) {
           Snackbar.make(
               getView()!!, resources.getString(R.string.invalid_payment), Snackbar.LENGTH_SHORT)
               .show()
@@ -94,15 +105,12 @@ class EnterPaymentFragment : Fragment() {
 
     mNextBtn = view.findViewById(R.id.enter_payment_next_btn)
     mNextBtn!!.setOnClickListener {
-      var amount = 0.0
+      var amount = -1.0
       if (mCurrentPayment!!.text.isNotEmpty()) {
         amount = mCurrentPayment!!.text.toString().toDouble()
       }
 
       mViewModel!!.getUIViewModel().updatePayment(Payment(amount, Date().time))
-      val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-      imm.hideSoftInputFromWindow(view.windowToken, 0)
-      mHost?.next()
     }
     return view
   }
@@ -120,6 +128,7 @@ class EnterPaymentFragment : Fragment() {
 
   override fun onStart() {
     super.onStart()
+    Log.d("KKK", "Calling onStart")
     mBusinessName!!.text = mHost!!.getCurrentBusiness()?.key
     mOutstandingBalance!!.text = mHost!!.getCurrentBusiness()?.outstandingBalance?.format()
 
@@ -147,8 +156,24 @@ class EnterPaymentFragment : Fragment() {
       mCurrentPaymentAmount.setText(it)
     })
 
-    mHost?.setToolbarTitle(resources.getString(R.string.enter_payment_fragment_title))
+    mViewModel!!.getUIViewModel().hideKeyboard().observe(this, Observer {
+      val imm = activity!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+      imm.hideSoftInputFromInputMethod(mNextBtn!!.windowToken, 0)
+    })
+
+    mViewModel!!.getUIViewModel().moveNext().observe(this, moveNextObserver)
+
+    mHost!!.setToolbarTitle(resources.getString(R.string.payment_screen))
   }
+
+//  override fun onPause() {
+//    super.onPause()
+//    Log.d("KKK", "Calling onPause " + mViewModel!!.getUIViewModel().moveNext().hasObservers())
+//    if (mViewModel!!.getUIViewModel().moveNext().hasObservers()) {
+//      mViewModel!!.getUIViewModel().moveNext().removeObservers(this)
+//      Log.d("KKK", "Calling onPause " + mViewModel!!.getUIViewModel().moveNext().hasObservers())
+//    }
+//  }
 
   private fun showStatus(message: String) {
     Snackbar.make(view!!, message, Snackbar.LENGTH_SHORT).show()

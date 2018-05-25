@@ -126,11 +126,9 @@ class EnterOrderViewModel(val context: Application) : ViewModel() {
 
       val updateInventoryRequest = mutableMapOf<String, Int>()
 
-      Log.d("MMM", "current order -> ${mCurrentOrder!!.items}")
-      order.items.forEach { itemName, quantity ->
+      for((itemName, quantity) in order.items) {
         val entry = mCurrentOrder!!.items.filter { it.key == itemName }
         if (!entry.isEmpty()) {
-          Log.d("MMM", "$itemName : $quantity::${entry.entries.first().value}")
           val quantityDelta = quantity - entry.entries.first().value
           updateInventoryRequest[itemName] = quantityDelta
         } else {
@@ -138,7 +136,6 @@ class EnterOrderViewModel(val context: Application) : ViewModel() {
         }
       }
 
-      Log.d("KKK", "EnterOrderViewModel:: update request -> $updateInventoryRequest")
       updateInventoryQuantityInteractor.execute(updateInventoryRequest)
           .subscribe({
             updateCheckinInteractor.execute(mCurrentCheckin!!)
@@ -174,10 +171,9 @@ class EnterOrderViewModel(val context: Application) : ViewModel() {
 
   private fun isValid(order: Order): Boolean {
     var isValid = true
-    order.items.forEach { name, quantity ->
+    for((_, quantity) in order.items) {
       if (quantity < 0) {
-        isValid = false
-        return@forEach
+        return false
       }
     }
 

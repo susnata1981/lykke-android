@@ -9,6 +9,7 @@ import android.graphics.Rect
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.ShapeDrawable
+import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -118,7 +119,13 @@ class RouteListFragment : Fragment() {
 
         if (data.isCurrentRoute) {
           val drawable = (holder.itemView.background.mutate() as GradientDrawable)
-          drawable.setColor(resources.getColor(R.color.colorAccent, context!!.theme))
+          var color = 0
+          if (Build.VERSION.SDK_INT >= 23) {
+            color = resources.getColor(R.color.colorAccent, context!!.theme)
+          } else {
+            color = resources.getColor(R.color.colorAccent)
+          }
+          drawable.setColor(color)
           drawable.invalidateSelf()
         }
 

@@ -9,5 +9,5 @@ class BusinessListViewModel(
     val checkinStatus: CheckinStatus,
     val businesses: LiveData<List<Business>>,
     val mPageTitle: MutableLiveData<String>,
-    val showAddBusinessBtn: Boolean) {
-}
+    val showAddBusinessBtn: Boolean,
+    val isActionEnabled: LiveData<Boolean>)

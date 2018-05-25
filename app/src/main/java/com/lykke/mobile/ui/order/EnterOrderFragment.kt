@@ -2,6 +2,7 @@ package com.lykke.mobile.ui.order
 
 import android.arch.lifecycle.Observer
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.BaseTransientBottomBar
 import android.support.design.widget.Snackbar
@@ -20,6 +21,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import com.lykke.mobile.Host
+import com.lykke.mobile.LykkeApplication
 import com.lykke.mobile.R
 import com.lykke.mobile.ViewModelFactory
 import com.lykke.mobile.domain.model.Inventory
@@ -30,8 +32,6 @@ import java.util.*
 
 class EnterOrderFragment : Fragment() {
   companion object {
-    private const val SALES_TAX = .08f
-
     fun newInstance(): EnterOrderFragment {
       return EnterOrderFragment()
     }
@@ -125,7 +125,9 @@ class EnterOrderFragment : Fragment() {
       return if (viewType == ORDER_TITLE) {
         val titleView = TextView(parent.context)
         titleView.setText(R.string.enter_order_title)
-        titleView.setTextAppearance(R.style.Headline)
+        if (Build.VERSION.SDK_INT >= 23) {
+          titleView.setTextAppearance(R.style.Headline)
+        }
         TitleVH(titleView)
       } else if (viewType == ORDER_DETAILS) {
         OrderDetailsVH(parent.inflate(R.layout.order_details_view))
@@ -164,7 +166,6 @@ class EnterOrderFragment : Fragment() {
       } else if (viewType == ORDER_DETAILS) {
         updateTotal(holder as OrderDetailsVH)
         mOrderTotalVH = holder
-        Log.d("KKK", "EOF::mItemQuantityMap -> $mItemQuantityMap")
         holder.continueBtn!!.setOnClickListener {
           val order = Order(mGross, mTotal, mItemQuantityMap, Date().time)
           mViewModel.getUIViewModel().updateOrder(order)
@@ -196,18 +197,26 @@ class EnterOrderFragment : Fragment() {
 
   fun updateTotal(vh: OrderDetailsVH?) {
     vh ?: return
-
     mInventory ?: return
 
     mGross = 0.0
-    mItemQuantityMap.forEach { key, quantity ->
+//    mItemQuantityMap.forEach { key, quantity ->
+//      Log.d("XXX", "key = $key")
+//      val item = mInventory!!.items.firstOrNull { it.key == key }
+//      Log.d("XXX", "item = $item")
+//      if (item != null) {
+//        mGross += item.price * quantity
+//      }
+//    }
+
+    for ((key, quantity) in mItemQuantityMap) {
       val item = mInventory!!.items.firstOrNull { it.key == key }
       if (item != null) {
         mGross += item.price * quantity
       }
     }
 
-    mTax = SALES_TAX * mGross
+    mTax = (context!!.applicationContext as LykkeApplication).getSalesTax() * mGross
     mTotal = mTax + mGross
 
     vh.orderGrossTV.text = mGross.format()

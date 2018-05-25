@@ -62,4 +62,6 @@
     <string name="summary_fragment_title">Summary</string>
     <string name="route_details_title">Route - %1$s</string>
     <string name="welcome_message">Lykke Login</string>
+    <string name="drawer_welcome_message">%1$s (logged in)</string>
+    <string name="payment_screen">Enter payment</string>
 </resources>

@@ -23,12 +23,10 @@ public final class BottomSheetUtils {
     private BottomSheetViewPagerListener(ViewPager viewPager, View bottomSheetParent) {
       this.viewPager = viewPager;
       this.behavior = ViewPagerBottomSheetBehavior.from(bottomSheetParent);
-      Log.d("ZZZ", "BottomSheetViewPagerListener: bottomSheetParent" + bottomSheetParent);
     }
 
     @Override
     public void onPageSelected(int position) {
-      Log.d("ZZZ", "onPageSelected: " + behavior);
       behavior.invalidateScrollingChild();
     }
   }

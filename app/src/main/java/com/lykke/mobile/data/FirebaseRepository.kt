@@ -307,7 +307,6 @@ class FirebaseRepository(val database: FirebaseDatabase) : Repository {
   override fun updateInventory(input: Map<String, Int>): Single<Boolean> {
     return Single.create { e ->
 
-      Log.d("KKK", "Updating inventory to $input")
       val dbRef = mDb.getReference("itemmaster")
       dbRef.runTransaction(object : Transaction.Handler {
 
@@ -320,9 +319,8 @@ class FirebaseRepository(val database: FirebaseDatabase) : Repository {
 
         override fun doTransaction(snapshot: MutableData): Transaction.Result {
           var updatedItems = mutableMapOf<String, Any>()
-          val items = snapshot.children.map {
+          snapshot.children.map {
             val item = it.getValue(ItemEntity::class.java)!!
-//            item.name = it.key
             val filteredItem = input.filter { it.key == item.name }
             if (!filteredItem.isEmpty()) {
               val newQuantity = item.quantity - filteredItem.entries.first().value
@@ -331,7 +329,6 @@ class FirebaseRepository(val database: FirebaseDatabase) : Repository {
               updatedItems[it.key] = item
             }
           }
-//          Log.d("KKK", "items -> $items")
           snapshot.value = updatedItems
           return Transaction.success(snapshot)
         }
